@@ -1,0 +1,14 @@
+# Normalize line endings to LF everywhere (Windows → Linux deploy)
+* text=auto eol=lf
+
+# Windows batch files must stay CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files — no line-ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.gz  binary
+*.zip binary

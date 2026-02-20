@@ -1,0 +1,28 @@
+# Telegram bot
+aiogram==3.13.0
+
+# Web framework (webhook endpoint + WSGI middleware для Flask-Admin)
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# ORM + драйверы PostgreSQL
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0          # async драйвер (для бота/FastAPI)
+psycopg2-binary==2.9.10  # sync драйвер (для Flask-Admin)
+
+# Миграции
+alembic==1.14.0
+
+# Планировщик задач (напоминания)
+apscheduler==3.10.4
+
+# Веб-админка
+flask==3.1.0
+flask-admin==1.6.1
+flask-sqlalchemy==3.1.1
+flask-login==0.6.3
+wtforms==3.0.1
+
+# Утилиты
+python-dotenv==1.0.1
+pytz==2024.2
