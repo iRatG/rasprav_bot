@@ -15,6 +15,7 @@ from aiogram.enums import ParseMode
 from aiogram.types import FSInputFile
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi.responses import RedirectResponse
 
 import config as cfg
 from bot.router import setup_routers
@@ -84,6 +85,11 @@ app.mount("/admin", WSGIMiddleware(flask_app))
 # ---------------------------------------------------------------------------
 # Webhook endpoint
 # ---------------------------------------------------------------------------
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/admin/")
+
 
 @app.post("/webhook")
 async def telegram_webhook(
