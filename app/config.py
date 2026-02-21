@@ -26,6 +26,7 @@ SYNC_DATABASE_URL: str = _require("SYNC_DATABASE_URL")  # sync (psycopg2)
 
 # Flask-Admin
 ADMIN_SECRET_KEY: str = _require("ADMIN_SECRET_KEY")
+DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
 # Бизнес-правила (из ТЗ, зафиксированы)
 TIMEZONE = "Europe/Moscow"

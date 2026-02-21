@@ -174,12 +174,14 @@ class DashboardView(AdminIndexView):
         return self.render(
             "admin/login.html",
             bot_username=cfg.BOT_USERNAME,
-            dev_login_url=url_for("admin.dev_login_view"),
+            dev_login_url=url_for("admin.dev_login_view") if cfg.DEBUG else None,
         )
 
     @expose("/dev-login")
     def dev_login_view(self):
-        """Dev-only: вход без Telegram."""
+        """Dev-only: вход без Telegram. Заблокирован на проде."""
+        if not cfg.DEBUG:
+            return "Не найдено", 404
         from db.session import SyncSessionLocal
         from db.models.master import Master
         db = SyncSessionLocal()
