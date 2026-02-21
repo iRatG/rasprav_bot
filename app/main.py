@@ -1,20 +1,18 @@
 """
-Точка входа приложения.
-
-FastAPI:
-  POST /webhook  — Telegram webhook (с проверкой secret_token)
-
-Flask-Admin монтируется по /admin через WSGIMiddleware.
-APScheduler запускается при старте.
+Application entry point.
+FastAPI: POST /webhook — Telegram webhook
+Flask-Admin: /admin via WSGIMiddleware
 """
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Optional
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import FSInputFile
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.wsgi import WSGIMiddleware
 
@@ -31,7 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Инициализация бота и диспетчера
+# Bot + dispatcher
 # ---------------------------------------------------------------------------
 bot = Bot(
     token=cfg.BOT_TOKEN,
@@ -41,7 +39,7 @@ dp = Dispatcher()
 
 
 # ---------------------------------------------------------------------------
-# Lifespan FastAPI
+# FastAPI lifespan
 # ---------------------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -50,15 +48,18 @@ async def lifespan(app: FastAPI):
 
     scheduler = setup_scheduler(bot)
     scheduler.start()
-    logger.info("Планировщик запущен")
+    logger.info("Scheduler started")
 
+    # Self-signed SSL cert (mounted from VPS host)
+    cert_path = Path("/etc/ssl/webhook_cert.pem")
     await bot.set_webhook(
         url=cfg.WEBHOOK_URL,
         secret_token=cfg.WEBHOOK_SECRET,
         allowed_updates=dp.resolve_used_update_types(),
         drop_pending_updates=True,
+        certificate=FSInputFile(str(cert_path)) if cert_path.exists() else None,
     )
-    logger.info("Webhook установлен: %s", cfg.WEBHOOK_URL)
+    logger.info("Webhook set: %s", cfg.WEBHOOK_URL)
 
     yield
 
@@ -67,7 +68,7 @@ async def lifespan(app: FastAPI):
     await bot.delete_webhook()
     await bot.session.close()
     await async_engine.dispose()
-    logger.info("Приложение остановлено")
+    logger.info("Application stopped")
 
 
 # ---------------------------------------------------------------------------
@@ -75,7 +76,7 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None)
 
-# Flask-Admin по /admin
+# Flask-Admin at /admin
 flask_app = create_flask_app()
 app.mount("/admin", WSGIMiddleware(flask_app))
 
@@ -83,6 +84,7 @@ app.mount("/admin", WSGIMiddleware(flask_app))
 # ---------------------------------------------------------------------------
 # Webhook endpoint
 # ---------------------------------------------------------------------------
+
 @app.post("/webhook")
 async def telegram_webhook(
     request: Request,
@@ -105,7 +107,7 @@ async def health() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Запуск
+# Run
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn

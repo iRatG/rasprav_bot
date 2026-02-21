@@ -26,6 +26,9 @@ class Client(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     tg_chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    first_name: Mapped[Optional[str]] = mapped_column(String(255))
+    last_name: Mapped[Optional[str]] = mapped_column(String(255))
+    username: Mapped[Optional[str]] = mapped_column(String(255))
     tg_status: Mapped[ClientStatus] = mapped_column(
         Enum(ClientStatus, name="client_status"),
         nullable=False,

@@ -8,9 +8,10 @@ from flask_admin import Admin
 
 import config as cfg
 from db.session import sync_engine
-from db.models import Master, Service, MasterServicePrice, Blackout
+from db.models import Master, Service, MasterServicePrice, Blackout, Client
 from web.admin.views import (
     BlackoutView,
+    ClientView,
     DashboardView,
     MasterServicePriceView,
     MasterView,
@@ -43,7 +44,10 @@ def create_flask_app() -> Flask:
         MasterServicePrice, SyncSessionLocal(), name="Цены", category="Настройки"
     ))
 
-    # Страница 4: Закрытия
+    # Страница 4: Клиенты
+    admin.add_view(ClientView(Client, SyncSessionLocal(), name="Клиенты"))
+
+    # Страница 5: Закрытия
     admin.add_view(BlackoutView(Blackout, SyncSessionLocal(), name="Закрытия"))
 
     return app

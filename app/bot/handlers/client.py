@@ -59,28 +59,36 @@ class BookingFSM(StatesGroup):
 # ---------------------------------------------------------------------------
 
 async def _get_or_create_client(session: AsyncSession, message: Message) -> Client:
-    """Возвращает клиента из БД или создаёт нового."""
-    stmt = select(Client).where(Client.tg_user_id == message.from_user.id)
+    """Возвращает клиента из БД или создаёт нового. Обновляет имя/username."""
+    user = message.from_user
+    stmt = select(Client).where(Client.tg_user_id == user.id)
     client = (await session.execute(stmt)).scalar_one_or_none()
     if client is None:
         client = Client(
-            tg_user_id=message.from_user.id,
+            tg_user_id=user.id,
             tg_chat_id=message.chat.id,
             tg_status=ClientStatus.active,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            username=user.username,
         )
         session.add(client)
         await session.commit()
         await session.refresh(client)
-    elif client.tg_status in (ClientStatus.blocked, ClientStatus.unsubscribed):
-        # Реактивация
-        client.tg_status = ClientStatus.active
-        client.tg_status_updated_at = datetime.now(timezone.utc)
-        session.add(Event(
-            event_type="client_reactivated",
-            client_id=client.id,
-            actor_type="client",
-            actor_id=client.id,
-        ))
+    else:
+        # Обновляем данные профиля (могли измениться)
+        client.first_name = user.first_name
+        client.last_name = user.last_name
+        client.username = user.username
+        if client.tg_status in (ClientStatus.blocked, ClientStatus.unsubscribed):
+            client.tg_status = ClientStatus.active
+            client.tg_status_updated_at = datetime.now(timezone.utc)
+            session.add(Event(
+                event_type="client_reactivated",
+                client_id=client.id,
+                actor_type="client",
+                actor_id=client.id,
+            ))
         await session.commit()
     return client
 

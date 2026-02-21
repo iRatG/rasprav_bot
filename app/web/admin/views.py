@@ -78,6 +78,28 @@ class MasterServicePriceView(SecureModelView):
     column_sortable_list = ["price", "active_from"]
 
 
+class ClientView(SecureModelView):
+    """Клиенты бота."""
+    can_create = False
+    can_delete = False
+    column_list = ["tg_user_id", "first_name", "last_name", "username", "tg_status", "created_at"]
+    column_labels = {
+        "tg_user_id": "Telegram ID",
+        "first_name": "Имя",
+        "last_name": "Фамилия",
+        "username": "Username",
+        "tg_status": "Статус",
+        "created_at": "Зарегистрирован",
+    }
+    column_searchable_list = ["first_name", "last_name", "username"]
+    column_sortable_list = ["created_at", "tg_status"]
+    column_default_sort = ("created_at", True)
+    column_formatters = {
+        "username": lambda v, c, m, p: f"@{m.username}" if m.username else "—",
+        "created_at": lambda v, c, m, p: m.created_at.astimezone(TZ).strftime("%d.%m.%Y %H:%M"),
+    }
+
+
 class BlackoutView(SecureModelView):
     """Страница 4: закрытия."""
     column_list = ["master", "start_ts", "end_ts", "reason", "created_at"]
@@ -142,6 +164,7 @@ class DashboardView(AdminIndexView):
                 today_appointments=today_appointments,
                 unconfirmed=unconfirmed,
                 now=now_local,
+                tz=TZ,
             )
         finally:
             db.close()

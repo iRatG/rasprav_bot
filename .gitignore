@@ -25,6 +25,24 @@ ENV/
 technical_review
 ngrok.txt
 
+# Deploy/SSH скрипты с паролями VPS — не коммитить
+deploy.py
+deploy_fix.py
+deploy_post.py
+deploy_final.py
+test_ssh.py
+ssh_check.py
+ssh_stderr.py
+
+# Claude IDE
+.claude/
+
+# Временные файлы
+hello.txt
+out.txt
+go.sh
+run.bat
+
 # IDE
 .idea/
 .vscode/

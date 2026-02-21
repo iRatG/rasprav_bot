@@ -23,7 +23,7 @@
             <tbody>
               {% for apt in today_appointments %}
               <tr>
-                <td>{{ apt.start_ts.astimezone()|string|truncate(16, True, '') }}</td>
+                <td>{{ apt.start_ts.astimezone(tz).strftime('%d.%m.%Y %H:%M') }}</td>
                 <td>#{{ apt.id }}</td>
                 <td>{{ apt.status.value }}</td>
                 <td>{{ apt.price_snapshot }} ₽</td>
@@ -48,7 +48,7 @@
             {% for apt in unconfirmed %}
             <li>
               #{{ apt.id }} —
-              {{ apt.start_ts.strftime('%d.%m %H:%M') }}
+              {{ apt.start_ts.astimezone(tz).strftime('%d.%m %H:%M') }}
             </li>
             {% endfor %}
           </ul>
